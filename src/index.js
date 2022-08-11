@@ -39,32 +39,44 @@ const MORSE_TABLE = {
 
 function decode(expr) {
 	let codes = {
-		'.': '10',
-		'-': '11',
+		'10': '.',
+		'11': '-',
 	};
 
-	let getMorseLetter = (char) => {
-		for (let prop in MORSE_TABLE) {
-			if (MORSE_TABLE[prop] === char) {
-				return prop;
+	return expr.split('**********') // Separate by spaces
+		.map(function (word) { // Separate into Morse words
+			let array = [];
+			let i = 0;
+
+			while (i + 10 <= word.length) {
+				array.push(word.slice(i, i + 10));
+
+				i += 10;
 			}
-		}
 
-		return null;
-	}
+			return array;
+		})
+		.map(function (words) {
+			return words
+				.map(function (letter) { // Separate into digital(0 and 1) letters
+					let array = [];
+					let i = 0;
 
-	return expr
-		.split(' ')
-		.map(word => word.split('')
-			.map(char => getMorseLetter(char))
-			.map(morseChar => morseChar
-				.split('')
-				.map(array => codes[array])
-				.join('')
-			)
-			.map(word => '0'.repeat(10 - word.length) + word)
-			.reduce((previousValue, word) => previousValue + word, ''))
-		.join('**********');
+					while (i + 2 <= 10) {
+						array.push(letter.slice(i, i + 2));
+
+						i += 2;
+					}
+
+					return array;
+				})
+				.map(letter => letter
+					.filter(l => l !== '00') // Remove trailing 00 symbols
+					.map(l => codes[l]) // Convert to Morse symbols
+					.join('')) // Join Morse symbols to get Morse letters
+				.map(morseLetter => MORSE_TABLE[morseLetter]) // Convert from Morse letters to normal letters
+				.join(''); // Join normal letters together to get normal words
+		}).join(' '); // Join words together with spaces between them
 }
 
 module.exports = {
